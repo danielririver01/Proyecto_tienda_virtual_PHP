@@ -1,0 +1,38 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/**/*.php",
+      "use": "@vercel/php"
+    },
+    {
+      "src": "index.php",
+      "use": "@vercel/php"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.php"
+    }
+  ],
+  "functions": {
+    "api/**/*.php": {
+      "runtime": "php",
+      "maxDuration": 10
+    },
+    "index.php": {
+      "runtime": "php",
+      "maxDuration": 10
+    }
+  },
+  "env": {
+    "APP_ENV": "production"
+  },
+  "installCommand": "composer install --no-dev",
+  "buildCommand": "echo 'Build completed'"
+}

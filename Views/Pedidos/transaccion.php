@@ -67,6 +67,7 @@
                     if($_SESSION['permisosMod']['u'] and $_SESSION['userData']['idrol'] != RCLIENTES ){
              ?>
             <div class="col-6 text-right">
+              <button class="btn btn-outline-primary" onclick="fntTransaccion('<?= $idTransaccion ?>');"><i class="fa fa-reply-all" aria-hidden="true"></i> Hacer Reembolso </button>
             </div>
             <?php   }
                  } ?>

@@ -4,3 +4,9 @@ RewriteEngine on
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
+
+<Files ".env">
+  Require all denied
+</Files>
+
+RewriteRule ^\.env - [F,L]

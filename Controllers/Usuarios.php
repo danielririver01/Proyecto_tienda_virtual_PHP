@@ -43,7 +43,10 @@
 					if($idUsuario == 0)
 					{
 						$option = 1;
-						$strPassword =  empty($_POST['txtPassword']) ? hash("SHA256",passGenerator()) : hash("SHA256",$_POST['txtPassword']);
+                        $pwdRaw = empty($_POST['txtPassword']) ? passGenerator() : $_POST['txtPassword'];
+                        $val = validarPasswordFuerte($pwdRaw);
+                        if(!$val['ok']){ echo json_encode(["status"=>false,"msg"=>implode(' ', $val['mensajes'])],JSON_UNESCAPED_UNICODE); die(); }
+                        $strPassword = hashPassword($pwdRaw);
 
 						if($_SESSION['permisosMod']['w']){
 							$request_user = $this->model->insertUsuario($strIdentificacion,
@@ -57,7 +60,7 @@
 						}
 					}else{
 						$option = 2;
-						$strPassword =  empty($_POST['txtPassword']) ? "" : hash("SHA256",$_POST['txtPassword']);
+                        $strPassword =  empty($_POST['txtPassword']) ? "" : (function($p){ $v=validarPasswordFuerte($p); if(!$v['ok']){ echo json_encode(["status"=>false,"msg"=>implode(' ', $v['mensajes'])],JSON_UNESCAPED_UNICODE); die(); } return hashPassword($p); })($_POST['txtPassword']);
 						if($_SESSION['permisosMod']['u']){
 							$request_user = $this->model->updateUsuario($idUsuario,
 																		$strIdentificacion, 
@@ -190,9 +193,11 @@
 					$strApellido = strClean($_POST['txtApellido']);
 					$intTelefono = intval(strClean($_POST['txtTelefono']));
 					$strPassword = "";
-					if(!empty($_POST['txtPassword'])){
-						$strPassword = hash("SHA256",$_POST['txtPassword']);
-					}
+                    if(!empty($_POST['txtPassword'])){
+                        $v = validarPasswordFuerte($_POST['txtPassword']);
+                        if(!$v['ok']){ echo json_encode(["status"=>false,"msg"=>implode(' ', $v['mensajes'])],JSON_UNESCAPED_UNICODE); die(); }
+                        $strPassword = hashPassword($_POST['txtPassword']);
+                    }
 					$request_user = $this->model->updatePerfil($idUsuario,
 																$strIdentificacion, 
 																$strNombre,

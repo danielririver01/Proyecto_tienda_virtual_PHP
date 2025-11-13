@@ -28,7 +28,7 @@
 			$this->strApellido = $apellido;
 			$this->intTelefono = $telefono;
 			$this->strEmail = $email;
-			$this->strPassword = $password;
+            $this->strPassword = $password;
 			$this->intTipoId = $tipoid;
 			$this->intStatus = $status;
 			$return = 0;
@@ -45,8 +45,8 @@
         						$this->strNombre,
         						$this->strApellido,
         						$this->intTelefono,
-        						$this->strEmail,
-        						$this->strPassword,
+                        $this->strEmail,
+                        $this->strPassword,
         						$this->intTipoId,
         						$this->intStatus);
 	        	$request_insert = $this->insert($query_insert,$arrData);
@@ -90,7 +90,7 @@
 			$this->strApellido = $apellido;
 			$this->intTelefono = $telefono;
 			$this->strEmail = $email;
-			$this->strPassword = $password;
+            $this->strPassword = $password;
 			$this->intTipoId = $tipoid;
 			$this->intStatus = $status;
 
@@ -102,8 +102,8 @@
 			{
 				if($this->strPassword  != "")
 				{
-					$sql = "UPDATE persona SET identificacion=?, nombres=?, apellidos=?, telefono=?, email_user=?, password=?, rolid=?, status=? 
-							WHERE idpersona = $this->intIdUsuario ";
+                    $sql = "UPDATE persona SET identificacion=?, nombres=?, apellidos=?, telefono=?, email_user=?, password=?, rolid=?, status=? 
+                            WHERE idpersona = $this->intIdUsuario ";
 					$arrData = array($this->strIdentificacion,
 	        						$this->strNombre,
 	        						$this->strApellido,
@@ -145,12 +145,12 @@
 			$this->strNombre = $nombre;
 			$this->strApellido = $apellido;
 			$this->intTelefono = $telefono;
-			$this->strPassword = $password;
+            $this->strPassword = $password;
 
 			if($this->strPassword != "")
 			{
-				$sql = "UPDATE persona SET identificacion=?, nombres=?, apellidos=?, telefono=?, password=? 
-						WHERE idpersona = $this->intIdUsuario ";
+                $sql = "UPDATE persona SET identificacion=?, nombres=?, apellidos=?, telefono=?, password=? 
+                        WHERE idpersona = $this->intIdUsuario ";
 				$arrData = array($this->strIdentificacion,
 								$this->strNombre,
 								$this->strApellido,

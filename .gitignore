@@ -1,4 +1,9 @@
-/Assets/images/Productos/
-/Assets/images/Categorias/
-/Assets/images/Uploads/
+Assets/images/
+Assets/tienda/images/
 /Libraries
+.env
+*.png
+*.jpg
+*.png
+.trae/
+tests/

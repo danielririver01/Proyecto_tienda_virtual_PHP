@@ -38,7 +38,7 @@
 	<meta property="og:image"       content="<?= $urlImg; ?>" />
 
 <!--===============================================================================================-->	
-	<link rel="icon" type="image/png" href="<?= media() ?>/tienda/images/Logo.ico"/>
+	<link rel="icon" type="image/png" href="<?= media() ?>/tienda/images/favicon.ico"/>
 <!--===============================================================================================-->
 	<link rel="stylesheet" type="text/css" href="<?= media() ?>/tienda/vendor/bootstrap/css/bootstrap.min.css">
 <!--===============================================================================================-->
@@ -139,7 +139,7 @@
 					
 					<!-- Logo desktop -->		
 					<a href="<?= base_url(); ?>" class="logo">
-						<img src="<?= media() ?>/tienda/images/logo.png" width="150px" alt="Tienda Virtual">
+						<img src="<?= media() ?>/tienda/images/logo.png" alt="Tienda Virtual">
 					</a>
 
 					<!-- Menu desktop -->
@@ -190,7 +190,7 @@
 		<div class="wrap-header-mobile">
 			<!-- Logo moblie -->		
 			<div class="logo-mobile">
-				<a href="<?= base_url(); ?>"><img src="<?= media() ?>/tienda/images/logo.png" width="125px" alt="Tienda Virtual"></a>
+				<a href="<?= base_url(); ?>"><img src="<?= media() ?>/tienda/images/logo.png" alt="Tienda Virtual"></a>
 			</div>
 
 			<!-- Icon header -->

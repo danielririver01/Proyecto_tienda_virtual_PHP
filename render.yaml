@@ -1,0 +1,47 @@
+services:
+  # Servicio PHP Principal
+  - type: web
+    name: tienda-virtual-php
+    env: php
+    plan: free
+    buildCommand: "composer install --no-dev"
+    startCommand: "php -S 0.0.0.0:$PORT -t ."
+    healthCheckPath: /
+    
+    # Variables de entorno
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: BASE_URL
+        sync: false
+        
+    # Directorios a ignorar
+    ignore:
+      - .git
+      - node_modules
+      - tests
+      - .trae
+      
+    # Configuración de PHP
+    runtime: php
+    phpVersion: "8.2"
+    
+    # Configuración de Apache (opcional)
+    # Si prefieres Apache en lugar del servidor PHP integrado
+    # webService:
+    #   type: web
+    #   env: static
+    #   buildCommand: ""
+    #   staticPublishPath: .
+
+  # Base de datos PostgreSQL
+  - type: pserv
+    name: tienda-virtual-db
+    env: postgres
+    plan: free
+    databases:
+      - name: tienda_virtual
+        user: tienda_user
+
+# Configuración general
+version: "1"

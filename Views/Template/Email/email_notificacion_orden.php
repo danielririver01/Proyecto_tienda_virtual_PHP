@@ -39,7 +39,7 @@ $detalle = $data['pedido']['detalle'];
 		<table>
 			<tr>
 				<td width="33.33%">
-					<img class="logo" src="<?= media(); ?>/tienda/images/logo-no-background.png" width="125px" alt="Logo">
+					<img class="logo" src="<?= media(); ?>/tienda/images/logo.png" alt="Logo">
 				</td>
 				<td width="33.33%">
 					<div class="text-center">

@@ -1,0 +1,26 @@
+{
+  "name": "tienda-virtual-php",
+  "version": "1.0.0",
+  "description": "Tienda Virtual PHP para Vercel",
+  "scripts": {
+    "build": "echo 'Build completed for Vercel'",
+    "start": "echo 'Starting Vercel functions...'",
+    "dev": "vercel dev"
+  },
+  "dependencies": {
+    "@vercel/node": "^3.0.0"
+  },
+  "devDependencies": {
+    "vercel": "^32.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "vercel": {
+    "functions": {
+      "api/**/*.php": {
+        "runtime": "php"
+      }
+    }
+  }
+}

@@ -5,8 +5,8 @@
      $envVars = parse_ini_file($envPath, false, INI_SCANNER_TYPED) ?: [];
      foreach ($envVars as $k => $v) { if (!is_array($v)) { putenv($k.'='.$v); } }
  }
-	const BASE_URL = "http://localhost/tienda_virtual"; # solo para desarollo pero no debe ser usado para produccion
-	//const BASE_URL = "https://abelosh.com/tiendavirtual"; # para producción
+	//const BASE_URL = "http://localhost/tienda_virtual"; # solo para desarollo pero no debe ser usado para produccion
+	const BASE_URL = getenv('BASE_URL') ?: "https://tu-app.onrender.com"; # para producción en Render
 
 	//Zona horaria
 	date_default_timezone_set('America/Bogota');
