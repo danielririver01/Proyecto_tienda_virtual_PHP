@@ -55,60 +55,73 @@
         $file = ob_get_clean();
         return $file;        
     }
-    //Envio de correos
     function sendEmail($data,$template)
     {
-        if(ENVIRONMENT == 1){
-            $asunto = $data['asunto'];
-            $emailDestino = $data['email'];
-            $empresa = NOMBRE_REMITENTE;
-            $remitente = EMAIL_REMITENTE;
-            $emailCopia = !empty($data['emailCopia']) ? $data['emailCopia'] : "";
-            //ENVIO DE CORREO
-            $de = "MIME-Version: 1.0\r\n";
-            $de .= "Content-type: text/html; charset=UTF-8\r\n";
-            $de .= "From: {$empresa} <{$remitente}>\r\n";
-            $de .= "Bcc: $emailCopia\r\n";
-            ob_start();
-            require_once("Views/Template/Email/".$template.".php");
-            $mensaje = ob_get_clean();
-            $send = mail($emailDestino, $asunto, $mensaje, $de);
-            return $send;
-        }else{
-           //Create an instance; passing `true` enables exceptions
+        ob_start();
+        require_once("Views/Template/Email/".$template.".php");
+        $mensaje = ob_get_clean();
+        $driver = defined('MAIL_DRIVER') ? MAIL_DRIVER : (ENVIRONMENT == 1 ? 'mail' : 'smtp');
+        if($driver === 'smtp' && defined('MAIL_HOST') && MAIL_HOST !== ''){
             $mail = new PHPMailer(true);
-            ob_start();
-            require_once("Views/Template/Email/".$template.".php");
-            $mensaje = ob_get_clean();
-
             try {
-                //Server settings
-                $mail->SMTPDebug = 0;                      //Enable verbose debug output
-                $mail->isSMTP();                                            //Send using SMTP
-                $mail->Host       = 'smtp.gmail.com';                     //Set the SMTP server to send through
-                $mail->SMTPAuth   = true;                                   //Enable SMTP authentication
-                $mail->Username   = 'jhojho6201@gmail.com';          //SMTP username
-                $mail->Password   = 'gtfk ozar hqpq ixim';                               //SMTP password
-                $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;            //Enable implicit TLS encryption
-                $mail->Port       = 465;                                    //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
-
-                //Recipients
-                $mail->setFrom('jhojho6201@gmail.com', 'Servidor Local');
-                $mail->addAddress($data['email']);     //Add a recipient
+                $mail->SMTPDebug = defined('MAIL_DEBUG') ? MAIL_DEBUG : 0;
+                $mail->isSMTP();
+                $mail->Host = MAIL_HOST;
+                $mail->SMTPAuth = defined('MAIL_AUTH') ? MAIL_AUTH : true;
+                $mail->Username = defined('MAIL_USER') ? MAIL_USER : '';
+                $mail->Password = defined('MAIL_PASSWORD') ? MAIL_PASSWORD : '';
+                $secure = strtolower(defined('MAIL_SECURE') ? MAIL_SECURE : '');
+                if($secure === 'ssl'){
+                    $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+                    $mail->Port = (defined('MAIL_PORT') && MAIL_PORT > 0) ? MAIL_PORT : 465;
+                }elseif($secure === 'tls'){
+                    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                    $mail->Port = (defined('MAIL_PORT') && MAIL_PORT > 0) ? MAIL_PORT : 587;
+                }else{
+                    $mail->Port = (defined('MAIL_PORT') && MAIL_PORT > 0) ? MAIL_PORT : 25;
+                }
+                $fromEmail = defined('MAIL_FROM') ? MAIL_FROM : EMAIL_REMITENTE;
+                $fromName = defined('MAIL_FROM_NAME') ? MAIL_FROM_NAME : NOMBRE_REMITENTE;
+                $replyTo = defined('MAIL_REPLY_TO') ? MAIL_REPLY_TO : '';
+                $mail->setFrom($fromEmail, $fromName);
+                if(!empty($replyTo)){
+                    $mail->addReplyTo($replyTo);
+                }
+                $mail->addAddress($data['email']);
                 if(!empty($data['emailCopia'])){
                     $mail->addBCC($data['emailCopia']);
                 }
+                if(!empty($data['adjuntos']) && is_array($data['adjuntos'])){
+                    foreach($data['adjuntos'] as $a){
+                        if(is_string($a) && is_file($a)){
+                            $mail->addAttachment($a);
+                        }
+                    }
+                }
                 $mail->CharSet = 'UTF-8';
-                //Content
-                $mail->isHTML(true);                                  //Set email format to HTML
+                $mail->isHTML(true);
                 $mail->Subject = $data['asunto'];
-                $mail->Body    = $mensaje;
-                
+                $mail->Body = $mensaje;
                 $mail->send();
+                if(function_exists('securityLog')){ securityLog('email_send',["to"=>$data['email'],"template"=>$template,"driver"=>'smtp']); }
                 return true;
             } catch (Exception $e) {
+                if(function_exists('securityLog')){ securityLog('email_error',["to"=>$data['email'],"template"=>$template,"driver"=>'smtp',"error"=>$mail->ErrorInfo]); }
                 return false;
-            } 
+            }
+        } else {
+            $asunto = $data['asunto'];
+            $emailDestino = $data['email'];
+            $empresa = defined('MAIL_FROM_NAME') ? MAIL_FROM_NAME : NOMBRE_REMITENTE;
+            $remitente = defined('MAIL_FROM') ? MAIL_FROM : EMAIL_REMITENTE;
+            $emailCopia = !empty($data['emailCopia']) ? $data['emailCopia'] : "";
+            $de = "MIME-Version: 1.0\r\n";
+            $de .= "Content-type: text/html; charset=UTF-8\r\n";
+            $de .= "From: {$empresa} <{$remitente}>\r\n";
+            if(!empty($emailCopia)){$de .= "Bcc: $emailCopia\r\n";}
+            $send = mail($emailDestino, $asunto, $mensaje, $de);
+            if(function_exists('securityLog')){ securityLog($send ? 'email_send' : 'email_error',["to"=>$data['email'],"template"=>$template,"driver"=>'mail']); }
+            return $send;
         }
     }
 
@@ -288,10 +301,54 @@
         $cantidad = number_format($cantidad,2,SPD,SPM);
         return $cantidad;
     }
+
+    function getAppEnv(){
+        $v = getenv('APP_ENV');
+        return $v ? $v : 'development';
+    }
+
+    function passwordAlgo(){
+        $env = getAppEnv();
+        if(defined('PASSWORD_ARGON2ID')){
+            if($env === 'production'){
+                return [PASSWORD_ARGON2ID,["memory_cost"=>131072,"time_cost"=>5,"threads"=>2]];
+            }
+            return [PASSWORD_ARGON2ID,["memory_cost"=>65536,"time_cost"=>3,"threads"=>2]];
+        }
+        if($env === 'production'){ return [PASSWORD_BCRYPT,["cost"=>15]]; }
+        return [PASSWORD_BCRYPT,["cost"=>12]];
+    }
+
+    function hashPassword($pwd){
+        [$algo,$opt] = passwordAlgo();
+        return password_hash($pwd,$algo,$opt);
+    }
+
+    function isCommonPassword($p){
+        $list = ['123456','password','qwerty','123456789','111111','abc123','123123','iloveyou','admin'];
+        return in_array(strtolower($p),$list,true);
+    }
+
+    function validarPasswordFuerte($p){
+        $ok = true; $msgs = [];
+        if(strlen($p) < 10){ $ok = false; $msgs[] = 'La contraseña debe tener al menos 10 caracteres.'; }
+        if(!preg_match('/[A-Z]/',$p)){ $ok = false; $msgs[] = 'Debe incluir al menos una letra mayúscula.'; }
+        if(!preg_match('/\d/',$p)){ $ok = false; $msgs[] = 'Debe incluir al menos un número.'; }
+        if(isCommonPassword($p)){ $ok = false; $msgs[] = 'Contraseña demasiado común.'; }
+        return ['ok'=>$ok,'mensajes'=>$msgs];
+    }
+
+    function securityLog($event,$meta=[]){
+        $dir = __DIR__.'/../../storage/logs';
+        if(!is_dir($dir)){ @mkdir($dir,0777,true); }
+        $line = date('c')."|".$event."|".json_encode($meta)."\n";
+        @file_put_contents($dir.'/security.log',$line,FILE_APPEND);
+    }
     
     function getTokenPaypal(){
         $payLogin = curl_init(URLPAYPAL."/v1/oauth2/token");
-        curl_setopt($payLogin, CURLOPT_SSL_VERIFYPEER, FALSE);
+        curl_setopt($payLogin, CURLOPT_SSL_VERIFYPEER, TRUE);
+        curl_setopt($payLogin, CURLOPT_SSL_VERIFYHOST, 2);
         curl_setopt($payLogin, CURLOPT_RETURNTRANSFER,TRUE);
         curl_setopt($payLogin, CURLOPT_USERPWD, IDCLIENTE.":".SECRET);
         curl_setopt($payLogin, CURLOPT_POSTFIELDS, "grant_type=client_credentials");
@@ -317,7 +374,8 @@
         }
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $ruta);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, TRUE);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $arrHeader);
         $result = curl_exec($ch);
@@ -342,7 +400,8 @@
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $ruta);
         curl_setopt($ch, CURLOPT_POST, TRUE);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, TRUE);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $arrHeader);
         $result = curl_exec($ch);
